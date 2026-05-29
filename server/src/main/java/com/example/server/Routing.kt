@@ -92,5 +92,29 @@ fun Application.configureRouting() {
             }
             call.respondText(json, ContentType.Application.Json)
         }
+        get("/top/search") {
+            val query = call.request.queryParameters["q"] ?: ""
+            val players = if (query.isBlank()) {
+                emptyList()
+            } else {
+                transaction {
+                    (Players innerJoin Users)
+                        .slice(Players.score, Users.login)
+                        .select { Users.login like "%$query%" }
+                        .orderBy(Players.score to SortOrder.DESC)
+                        .limit(20)
+                        .map { mapOf("login" to it[Users.login], "score" to it[Players.score]) }
+                }
+            }
+            val json = buildString {
+                append("[")
+                players.forEachIndexed { idx, p ->
+                    if (idx > 0) append(",")
+                    append("{\"login\":\"${p["login"]}\",\"score\":${p["score"]}}")
+                }
+                append("]")
+            }
+            call.respondText(json, ContentType.Application.Json)
+        }
     }
 }
