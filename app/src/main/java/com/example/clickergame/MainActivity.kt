@@ -1,5 +1,6 @@
 package com.example.clickergame
 
+import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
 import android.widget.ImageView
@@ -27,16 +28,28 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        userId = "player_2"
-
+        // Проверка авторизации
+        val prefs = getSharedPreferences("clicker_prefs", MODE_PRIVATE)
+        val savedUserId = prefs.getString("userId", null)
+        if (savedUserId.isNullOrEmpty()) {
+            startActivity(Intent(this, LoginActivity::class.java))
+            finish()
+            return
+        }
+        userId = savedUserId
 
         val backgroundImage = findViewById<ImageView>(R.id.backgroundImage)
         val clickableObject = findViewById<ImageView>(R.id.clickableObject)
         val scoreText = findViewById<TextView>(R.id.scoreText)
         val showTopButton = findViewById<Button>(R.id.showTopButton)
+        val btnLogout = findViewById<Button>(R.id.btnLogout)  // теперь кнопка есть
 
+        // Загрузка фона (можно локальный или из интернета)
+        Glide.with(this)
+            .load("https://images.pexels.com/photos/531880/pexels-photo-531880.jpeg")
+            .into(backgroundImage)
 
-        val prefs = getSharedPreferences("clicker_prefs", MODE_PRIVATE)
+        // Локальный счёт (для оффлайн отображения)
         currentScore = prefs.getLong("score", 0)
         scoreText.text = "Score: $currentScore"
 
@@ -50,10 +63,26 @@ class MainActivity : AppCompatActivity() {
         }
 
         showTopButton.setOnClickListener {
-            lifecycleScope.launch {
-                val top = fetchTop()
-                showTopDialog(top)
-            }
+            startActivity(Intent(this, TopPlayersActivity::class.java))
+        }
+
+        btnLogout.setOnClickListener {
+            // Очищаем данные пользователя
+            getSharedPreferences("clicker_prefs", MODE_PRIVATE).edit().clear().apply()
+            startActivity(Intent(this, LoginActivity::class.java))
+            finish()
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        val prefs = getSharedPreferences("clicker_prefs", MODE_PRIVATE)
+        val currentUserId = prefs.getString("userId", null)
+        if (currentUserId.isNullOrEmpty()) {
+            startActivity(Intent(this, LoginActivity::class.java))
+            finish()
+        } else if (currentUserId != userId) {
+            userId = currentUserId
         }
     }
 
@@ -65,37 +94,6 @@ class MainActivity : AppCompatActivity() {
         } catch (e: Exception) {
             Toast.makeText(this, "Ошибка отправки: ${e.message}", Toast.LENGTH_SHORT).show()
         }
-    }
-
-    private suspend fun fetchTop(): List<Pair<String, Long>> {
-        return try {
-            val response: String = client.get("$baseUrl/top").body()
-            val regex = """\{[^}]*\}""".toRegex()
-            regex.findAll(response).map { match ->
-                val json = match.value
-                val userId = json.substringAfter("\"userId\":\"").substringBefore("\"")
-                val score = json.substringAfter("\"score\":").substringBefore("}").toLongOrNull() ?: 0
-                userId to score
-            }.toList()
-        } catch (e: Exception) {
-            Toast.makeText(this, "Не удалось загрузить рейтинг: ${e.message}", Toast.LENGTH_SHORT).show()
-            emptyList()
-        }
-    }
-
-    private fun showTopDialog(top: List<Pair<String, Long>>) {
-        val message = buildString {
-            append("Топ игроков:\n")
-            top.forEachIndexed { index, (id, score) ->
-                val shortId = if (id.length > 12) id.take(12) + "..." else id
-                append("${index+1}. $shortId : $score\n")
-            }
-        }
-        android.app.AlertDialog.Builder(this)
-            .setTitle("Рейтинг")
-            .setMessage(message)
-            .setPositiveButton("OK", null)
-            .show()
     }
 
     override fun onDestroy() {
