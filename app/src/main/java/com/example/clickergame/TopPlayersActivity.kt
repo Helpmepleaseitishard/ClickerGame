@@ -8,6 +8,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.lifecycle.lifecycleScope
+import com.google.android.material.chip.Chip
+import com.google.android.material.chip.ChipGroup
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.engine.cio.CIO
@@ -22,10 +24,9 @@ class TopPlayersActivity : AppCompatActivity() {
     private lateinit var recyclerView: RecyclerView
     private lateinit var adapter: PlayerAdapter
     private val playersList = mutableListOf<Player>()
-
-    // Элементы поиска (коммит 12)
     private lateinit var editSearch: EditText
     private lateinit var btnSearch: Button
+    private lateinit var chipGroupHistory: ChipGroup
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -36,20 +37,22 @@ class TopPlayersActivity : AppCompatActivity() {
         adapter = PlayerAdapter(playersList)
         recyclerView.adapter = adapter
 
-        // Инициализация поиска
         editSearch = findViewById(R.id.editSearch)
         btnSearch = findViewById(R.id.btnSearch)
+        chipGroupHistory = findViewById(R.id.chipGroupHistory)
 
         btnSearch.setOnClickListener {
             val query = editSearch.text.toString().trim()
             if (query.isNotEmpty()) {
+                saveSearchQuery(query)
                 performSearch(query)
             } else {
-                loadTop() // если запрос пустой, загружаем весь топ
+                loadTop()
             }
         }
 
         loadTop()
+        displaySearchHistory()
     }
 
     private fun loadTop() {
@@ -99,6 +102,37 @@ class TopPlayersActivity : AppCompatActivity() {
             val score = obj.substringAfter("\"score\":").substringBefore("}").toLongOrNull() ?: 0
             Player(login, score)
         }.toList()
+    }
+
+    // ========== Методы для работы с историей поиска (коммит 13) ==========
+    private fun saveSearchQuery(query: String) {
+        val prefs = getSharedPreferences("search_prefs", MODE_PRIVATE)
+        val history = getSearchHistory().toMutableList()
+        history.remove(query)
+        history.add(0, query)
+        val trimmed = if (history.size > 5) history.subList(0, 5) else history
+        prefs.edit().putStringSet("recent_searches", trimmed.toSet()).apply()
+        displaySearchHistory()  // обновляем чипсы
+    }
+
+    private fun getSearchHistory(): List<String> {
+        val prefs = getSharedPreferences("search_prefs", MODE_PRIVATE)
+        return prefs.getStringSet("recent_searches", emptySet())?.toList() ?: emptyList()
+    }
+
+    private fun displaySearchHistory() {
+        chipGroupHistory.removeAllViews()
+        val history = getSearchHistory()
+        for (query in history) {
+            val chip = Chip(this)
+            chip.text = query
+            chip.isClickable = true
+            chip.setOnClickListener {
+                editSearch.setText(query)
+                performSearch(query)
+            }
+            chipGroupHistory.addView(chip)
+        }
     }
 
     override fun onDestroy() {

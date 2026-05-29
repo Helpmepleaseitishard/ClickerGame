@@ -25,6 +25,14 @@
             android:text="Искать" />
     </LinearLayout>
 
+    <com.google.android.material.chip.ChipGroup
+        android:id="@+id/chipGroupHistory"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:visibility="gone"
+    />
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerViewTop"
         android:layout_width="match_parent"
