@@ -11,10 +11,6 @@ import io.ktor.client.call.body
 import io.ktor.client.engine.cio.CIO
 import io.ktor.client.request.get
 import kotlinx.coroutines.launch
-import java.net.URLEncoder
-
-// Модель Player (коммит 10)
-data class Player(val login: String, val score: Long)
 
 class TopPlayersActivity : AppCompatActivity() {
 
@@ -45,24 +41,12 @@ class TopPlayersActivity : AppCompatActivity() {
         }
     }
 
-    // Сетевые методы (коммит 10)
     private suspend fun fetchTop(): List<Player> {
         return try {
             val response: String = client.get("$baseUrl/top").body()
             parsePlayers(response)
         } catch (e: Exception) {
-            Toast.makeText(this@TopPlayersActivity, "Ошибка загрузки рейтинга", Toast.LENGTH_SHORT).show()
-            emptyList()
-        }
-    }
-
-    suspend fun searchTop(query: String): List<Player> {
-        return try {
-            val encodedQuery = URLEncoder.encode(query, "UTF-8")
-            val response: String = client.get("$baseUrl/top/search?q=$encodedQuery").body()
-            parsePlayers(response)
-        } catch (e: Exception) {
-            Toast.makeText(this@TopPlayersActivity, "Ошибка поиска", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this@TopPlayersActivity, "Ошибка загрузки", Toast.LENGTH_SHORT).show()
             emptyList()
         }
     }

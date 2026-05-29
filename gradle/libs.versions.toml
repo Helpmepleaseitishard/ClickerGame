@@ -18,6 +18,7 @@ exposed = "0.53.0"
 sqliteJdbc = "3.47.0.0"
 logback = "1.5.18"
 jetbrainsKotlinJvm = "2.0.21"
+playServicesGames = "24.0.0"
 
 
 [libraries]
@@ -49,6 +50,7 @@ androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 androidx-activity = { group = "androidx.activity", name = "activity", version.ref = "activity" }
 androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
+play-services-games = { group = "com.google.android.gms", name = "play-services-games", version.ref = "playServicesGames" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
