@@ -27,7 +27,40 @@ fun Application.configureRouting() {
             }
             call.respond(HttpStatusCode.OK, "ok")
         }
+        post("/register") {
+            val request = call.receiveText()
+            val login = request.substringAfter("\"login\":\"").substringBefore("\"")
+            val password = request.substringAfter("\"password\":\"").substringBefore("\"")
+            val passwordHash = password.hashCode()
 
+            if (login.isBlank() || password.isBlank()) {
+                call.respond(HttpStatusCode.BadRequest, "Login and password required")
+                return@post
+            }
+
+            val existing = transaction {
+                Users.select { Users.login eq login }.firstOrNull()
+            }
+            if (existing != null) {
+                call.respond(HttpStatusCode.Conflict, "Login already exists")
+                return@post
+            }
+
+            val newUserId = java.util.UUID.randomUUID().toString()
+            transaction {
+                Users.insert {
+                    it[Users.login] = login
+                    it[Users.passwordHash] = passwordHash
+                    it[Users.userId] = newUserId
+                }
+                // Создаём запись в таблице очков с нулевым счётом
+                Players.insert {
+                    it[Players.userId] = newUserId
+                    it[Players.score] = 0
+                }
+            }
+            call.respond(mapOf("userId" to newUserId))
+        }
         // Эндпоинт для получения топа-10
         get("/top") {
             val top = transaction {
