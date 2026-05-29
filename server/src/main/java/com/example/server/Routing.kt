@@ -45,7 +45,22 @@ fun Application.configureRouting() {
                 call.respond(HttpStatusCode.Conflict, "Login already exists")
                 return@post
             }
+            post("/login") {
+                val request = call.receiveText()
+                val login = request.substringAfter("\"login\":\"").substringBefore("\"")
+                val password = request.substringAfter("\"password\":\"").substringBefore("\"")
+                val passwordHash = password.hashCode()
 
+                val user = transaction {
+                    Users.select { (Users.login eq login) and (Users.passwordHash eq passwordHash) }
+                        .firstOrNull()
+                }
+                if (user == null) {
+                    call.respond(HttpStatusCode.Unauthorized, "Invalid login or password")
+                    return@post
+                }
+                call.respond(mapOf("userId" to user[Users.userId]))
+            }
             val newUserId = java.util.UUID.randomUUID().toString()
             transaction {
                 Users.insert {
