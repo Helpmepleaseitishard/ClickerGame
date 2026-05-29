@@ -40,18 +40,18 @@ class MainActivity : AppCompatActivity() {
 
         val backgroundImage = findViewById<ImageView>(R.id.backgroundImage)
         val clickableObject = findViewById<ImageView>(R.id.clickableObject)
-        val scoreText = findViewById<TextView>(R.id.scoreText)
+        val scoreText = findViewById<TextView>(R.id.scoreText)   // объявляем здесь
         val showTopButton = findViewById<Button>(R.id.showTopButton)
-        val btnLogout = findViewById<Button>(R.id.btnLogout)  // теперь кнопка есть
+        val btnLogout = findViewById<Button>(R.id.btnLogout)
 
-        // Загрузка фона (можно локальный или из интернета)
-        Glide.with(this)
-            .load("https://images.pexels.com/photos/531880/pexels-photo-531880.jpeg")
-            .into(backgroundImage)
 
-        // Локальный счёт (для оффлайн отображения)
-        currentScore = prefs.getLong("score", 0)
-        scoreText.text = "Score: $currentScore"
+        // Загружаем счёт с сервера и обновляем UI
+        lifecycleScope.launch {
+            val serverScore = fetchScore()
+            currentScore = serverScore
+            scoreText.text = "Score: $currentScore"
+            prefs.edit().putLong("score", currentScore).apply()
+        }
 
         clickableObject.setOnClickListener {
             currentScore++
@@ -67,10 +67,20 @@ class MainActivity : AppCompatActivity() {
         }
 
         btnLogout.setOnClickListener {
-            // Очищаем данные пользователя
-            getSharedPreferences("clicker_prefs", MODE_PRIVATE).edit().clear().apply()
+            prefs.edit().clear().apply()
             startActivity(Intent(this, LoginActivity::class.java))
             finish()
+        }
+    }
+
+    private suspend fun fetchScore(): Long {
+        return try {
+            val response: String = client.get("$baseUrl/score") {
+                header("X-User-Id", userId)
+            }.body()
+            response.substringAfter("\"score\":").substringBefore("}").toLongOrNull() ?: 0
+        } catch (e: Exception) {
+            0
         }
     }
 
@@ -83,6 +93,12 @@ class MainActivity : AppCompatActivity() {
             finish()
         } else if (currentUserId != userId) {
             userId = currentUserId
+            lifecycleScope.launch {
+                val serverScore = fetchScore()
+                currentScore = serverScore
+                findViewById<TextView>(R.id.scoreText).text = "Score: $currentScore"
+                prefs.edit().putLong("score", currentScore).apply()
+            }
         }
     }
 

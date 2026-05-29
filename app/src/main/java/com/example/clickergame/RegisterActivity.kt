@@ -67,9 +67,12 @@ class RegisterActivity : AppCompatActivity() {
                 val body = response.body<String>()
                 body.substringAfter("\"userId\":\"").substringBefore("\"")
             } else {
+                val errorText = response.body<String>()
+                println("Registration failed: ${response.status.value} - $errorText")
                 null
             }
         } catch (e: Exception) {
+            println("Network error: ${e.message}")
             null
         }
     }

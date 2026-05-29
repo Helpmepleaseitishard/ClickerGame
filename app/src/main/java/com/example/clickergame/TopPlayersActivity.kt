@@ -104,7 +104,7 @@ class TopPlayersActivity : AppCompatActivity() {
         }.toList()
     }
 
-    // ========== Методы для работы с историей поиска (коммит 13) ==========
+    // ==================== Сохранение истории поиска ====================
     private fun saveSearchQuery(query: String) {
         val prefs = getSharedPreferences("search_prefs", MODE_PRIVATE)
         val history = getSearchHistory().toMutableList()
@@ -112,7 +112,7 @@ class TopPlayersActivity : AppCompatActivity() {
         history.add(0, query)
         val trimmed = if (history.size > 5) history.subList(0, 5) else history
         prefs.edit().putStringSet("recent_searches", trimmed.toSet()).apply()
-        displaySearchHistory()  // обновляем чипсы
+        displaySearchHistory()
     }
 
     private fun getSearchHistory(): List<String> {
@@ -123,6 +123,11 @@ class TopPlayersActivity : AppCompatActivity() {
     private fun displaySearchHistory() {
         chipGroupHistory.removeAllViews()
         val history = getSearchHistory()
+        if (history.isEmpty()) {
+            chipGroupHistory.visibility = android.view.View.GONE
+            return
+        }
+        chipGroupHistory.visibility = android.view.View.VISIBLE
         for (query in history) {
             val chip = Chip(this)
             chip.text = query
