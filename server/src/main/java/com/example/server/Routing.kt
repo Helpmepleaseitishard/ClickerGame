@@ -14,15 +14,11 @@ fun Application.configureRouting() {
         post("/click") {
             val userId = call.request.headers["X-User-Id"]
                 ?: return@post call.respond(HttpStatusCode.BadRequest, "Missing user id")
-
             transaction {
                 val current = Players.select { Players.userId eq userId }
                     .firstOrNull()?.get(Players.score) ?: 0
-                if (current == 0L) {
-                    // новый игрок
-                    Players.insert { it[Players.userId] = userId; it[Players.score] = 1 }
-                } else {
-                    Players.update({ Players.userId eq userId }) { it[Players.score] = current + 1 }
+                Players.update({ Players.userId eq userId }) {
+                    it[Players.score] = current + 1
                 }
             }
             call.respond(HttpStatusCode.OK, "ok")
