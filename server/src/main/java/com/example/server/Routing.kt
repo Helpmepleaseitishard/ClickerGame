@@ -74,17 +74,19 @@ fun Application.configureRouting() {
         }
         // Эндпоинт для получения топа-10
         get("/top") {
-            val top = transaction {
-                Players.selectAll().orderBy(Players.score to SortOrder.DESC).limit(10).map {
-                    mapOf("userId" to it[Players.userId], "score" to it[Players.score])
-                }
+            val players = transaction {
+                (Players innerJoin Users)
+                    .slice(Players.score, Users.login)
+                    .selectAll()
+                    .orderBy(Players.score to SortOrder.DESC)
+                    .limit(20)
+                    .map { mapOf("login" to it[Users.login], "score" to it[Players.score]) }
             }
-            // ручной JSON, без сериализации
             val json = buildString {
                 append("[")
-                top.forEachIndexed { index, entry ->
-                    if (index > 0) append(",")
-                    append("{\"userId\":\"${entry["userId"]}\",\"score\":${entry["score"]}}")
+                players.forEachIndexed { idx, p ->
+                    if (idx > 0) append(",")
+                    append("{\"login\":\"${p["login"]}\",\"score\":${p["score"]}}")
                 }
                 append("]")
             }
