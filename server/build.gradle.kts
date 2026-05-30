@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.com.intellij.ide.plugins.PluginManagerCore.plugins
+
 plugins {
     kotlin("jvm")
     application
