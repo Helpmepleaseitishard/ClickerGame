@@ -1,5 +1,6 @@
 package com.example.clickergame
 
+import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -21,7 +22,11 @@ class PlayerAdapter(private val players: List<Player>) :
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val player = players[position]
-        holder.textView.text = "${player.login} - ${player.score}"   // теперь должно работать
+        holder.textView.text = "${player.login} - ${player.score}"
+        // Устанавливаем белый текст и полупрозрачный чёрный фон
+        holder.textView.setTextColor(Color.WHITE)
+        // Добавим отступы для красоты
+        holder.textView.setPadding(16, 16, 16, 16)
     }
 
     override fun getItemCount() = players.size

@@ -1,33 +1,82 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/main"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:padding="16dp">
+    android:layout_height="match_parent">
 
-    <EditText
-        android:id="@+id/editLogin"
+    <ImageView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Логин" />
+        android:layout_height="match_parent"
+        android:scaleType="centerCrop"
+        android:src="@drawable/ic_background" />
 
-    <EditText
-        android:id="@+id/editPassword"
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Пароль"
-        android:inputType="textPassword" />
+        android:layout_height="match_parent"
+        android:padding="16dp">
 
-    <Button
-        android:id="@+id/btnRegister"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Зарегистрироваться" />
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
 
-    <Button
-        android:id="@+id/btnGoToLogin"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Уже есть аккаунт? Войти" />
-</LinearLayout>
+            <EditText
+                android:id="@+id/editLogin"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/edit_text_bg"
+                android:hint="Логин"
+                android:inputType="text"
+                android:padding="12dp"
+                android:textColor="#000000"
+                android:textColorHint="#666666"
+                android:textSize="18sp" />
+
+
+            <EditText
+                android:id="@+id/editPassword"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/edit_text_bg"
+                android:hint="Пароль"
+                android:inputType="textPassword"
+                android:padding="12dp"
+                android:textColor="#000000"
+                android:textColorHint="#666666"
+                android:textSize="18sp" />
+
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnRegister"
+                android:layout_width="213dp"
+                android:layout_height="67dp"
+                android:layout_marginTop="24dp"
+                android:text="Зарегистрироваться"
+                android:textAllCaps="false"
+                android:textColor="#FFFFFF"
+                app:cornerRadius="100dp"
+                app:strokeColor="#4B0076"
+                app:strokeWidth="2dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnGoToLogin"
+                android:layout_width="261dp"
+                android:layout_height="63dp"
+                android:layout_marginTop="24dp"
+                android:text="Уже есть аккаунт? Войти"
+                android:textAllCaps="false"
+                android:textColor="#FFFFFF"
+                app:cornerRadius="100dp"
+                app:strokeColor="#4B0076"
+                app:strokeWidth="2dp" />
+
+        </LinearLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</FrameLayout>
